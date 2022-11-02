@@ -295,6 +295,6 @@ sys_sigreturn(void)
 ```
 alarmtest/usertests result and make grade as follow:
 ```
-<image src="alarmresult.png">
-<image src="usertestresult.png">
-<image src="trapgrade.png">
+![Image](https://raw.githubusercontent.com/Gladysid/Images-blog/master/IE-box-pic.png)
+![Image](https://raw.githubusercontent.com/Gladysid/Images-blog/master/IE-box-pic.png)
+![Image](https://raw.githubusercontent.com/Gladysid/Images-blog/master/IE-box-pic.png)
