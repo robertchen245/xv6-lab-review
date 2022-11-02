@@ -295,6 +295,6 @@ sys_sigreturn(void)
 ```
 alarmtest/usertests result and make grade as follow:
 ```
-<image src="alarmresult.png">
-<image src="usertestresult.png">
-<image src="trapgrade.png">
+<image src="alarmresult.PNG">
+<image src="usertestresult.PNG">
+<image src="trapgrade.PNG">
