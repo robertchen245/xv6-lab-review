@@ -298,3 +298,63 @@ alarmtest/usertests result and make grade as follow:
 <image src="alarmresult.PNG">
 <image src="usertestresult.PNG">
 <image src="trapgrade.PNG">
+	
+finished usertrap in trap.c
+```c
+void
+usertrap(void)
+{
+  int which_dev = 0;
+
+  if((r_sstatus() & SSTATUS_SPP) != 0)
+    panic("usertrap: not from user mode");
+
+  // send interrupts and exceptions to kerneltrap(),
+  // since we're now in the kernel.
+  w_stvec((uint64)kernelvec);
+
+  struct proc *p = myproc();
+  
+  // save user program counter.
+  p->trapframe->epc = r_sepc();
+  
+  if(r_scause() == 8){
+    // system call
+
+    if(p->killed)
+      exit(-1);
+
+    // sepc points to the ecall instruction,
+    // but we want to return to the next instruction.
+    //if called by sigalarm , epc has to change to handlerAddr
+    p->trapframe->epc += 4;
+
+    // an interrupt will change sstatus &c registers,
+    // so don't enable until done with those registers.
+    intr_on();
+
+    syscall();
+  } else if((which_dev = devintr()) != 0){
+    // ok
+  } else {
+    printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
+    printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+    p->killed = 1;
+  }
+
+  if(p->killed)
+    exit(-1);
+
+  // give up the CPU if this is a timer interrupt. 时间中断
+  if(which_dev == 2){
+    if(++p->ticks_count==p->alarm_interval&&p->ishandling==0){//tick reach set count and proc is not handling
+        memmove(p->alarm_trapframe,p->trapframe,sizeof(struct trapframe));// save trapframe to alarm_trapframe
+        p->ishandling=1;//start handling
+        p->trapframe->epc = (uint64)p->alarm_handler; //cast to timeinterrupt
+        p->ticks_count = 0;// 
+  }
+    yield();
+  }
+  usertrapret();
+}
+```
