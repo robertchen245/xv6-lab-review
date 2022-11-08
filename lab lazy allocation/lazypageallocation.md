@@ -72,7 +72,7 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
     *pte = 0;
   }
 }
-
+```
 ```c
 // in trap.c
   else if((which_dev = devintr()) != 0){
