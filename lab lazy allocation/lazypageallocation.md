@@ -231,10 +231,10 @@ argaddr(int n, uint64 *ip) //ip as addr do alloc and map like in trap.c
   return 0;
 }
 ```
-## Result
+## 4.Result
 <image src="lazygrade.PNG"> 
 
-## Conclusion
+## 5.Conclusion
 ```
 we have used 4 continues,2 in uvmcopy and 2 in uvmunmap
 in usertrap(): mind that do not hustle to kalloc before check the va's validity
