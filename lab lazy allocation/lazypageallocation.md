@@ -103,7 +103,7 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
     }
 ```
 ### Echo hi result
-<image src="echo hi.png"> 
+<image src="echo hi.PNG"> 
 
 ## 3.Lazytests and Usertests (moderate)
 ```
@@ -232,7 +232,7 @@ argaddr(int n, uint64 *ip) //ip as addr do alloc and map like in trap.c
 }
 ```
 ## Result
-<image src="lazygrade.png"> 
+<image src="lazygrade.PNG"> 
 
 ## Conclusion
 ```
