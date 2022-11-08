@@ -102,6 +102,9 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
 
     }
 ```
+### Echo hi result
+<image src="echo hi.png"> 
+
 ## 3.Lazytests and Usertests (moderate)
 ```
 Handle negative sbrk() arguments.
@@ -227,4 +230,14 @@ argaddr(int n, uint64 *ip) //ip as addr do alloc and map like in trap.c
   }
   return 0;
 }
+```
+## Result
+<image src="lazygrade.png"> 
+
+## Conclusion
+```
+we have used 4 continues,2 in uvmcopy and 2 in uvmunmap
+in usertrap(): mind that do not hustle to kalloc before check the va's validity
+(below p->sz , above userstack(always one page irrc))
+Always remember to PGROUNDUP/DOWN before mapping
 ```
