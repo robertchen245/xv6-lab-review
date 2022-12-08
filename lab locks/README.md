@@ -124,3 +124,107 @@ kfree(void *pa)
 <image src="kalloctest.PNG"> 
 
 ## 2.Buffer Cache(hard)
+```
+Modify the block cache so that the number of acquire loop iterations for all locks in the bcache is close to zero when running bcachetest. 
+Ideally the sum of the counts for all locks involved in the block cache should be zero, but it's OK if the sum is less than 500. 
+Modify bget and brelse so that concurrent lookups and releases for different blocks that are in the bcache are unlikely to conflict on locks 
+(e.g., don't all have to wait for bcache.lock). You must maintain the invariant that at most one copy of each block is cached. 
+When you are done, your output should be similar to that shown below
+ (though not identical). Make sure usertests still passes. make grade should pass all tests when you are done.
+```
+use hashtable/bucket to speed up buffer cache operation
+```c
+//param.h
+#define NBUCKET      17 //number of hashtable
+#define NSIZE        4 //size of each bucket
+// or just use NBUF number
+```
+```c
+// init all hashtables of bufs
+void
+binit(void)
+{
+  struct buf *b;
+  for(int i=0;i<NBUCKET;i++)
+  {
+    initlock(&bcache[i].lock,"bcache");
+    for(int j=0;j<NSIZE;j++)
+    {// global var's value is 0 already
+      b=&bcache[i].buf[j];
+      initsleeplock(&b->lock,"sleeplock");
+      b->timestamp=ticks;
+    }
+  }
+}
+int hashed(uint blockno)
+{
+  return blockno%NBUCKET;
+}
+
+static struct buf*
+bget(uint dev, uint blockno)
+{
+  int id=hashed(blockno);
+  acquire(&bcache[id].lock);
+  struct buf *b;
+  for(int i=0;i<NSIZE;i++)
+  {
+    b=&bcache[id].buf[i];
+    if (b->dev==dev&&b->blockno ==blockno)
+    {
+      b->refcnt++;
+      release(&bcache[id].lock);
+      acquiresleep(&b->lock);
+      return b;
+    }
+  }
+  // find the LRU
+  struct buf *temp=0;
+  uint temptime=-1;// max
+  //temptime=bcache[id].buf[0].timestamp;
+  for(int i=0;i<NSIZE;i++)
+  {
+    if(bcache[id].buf[i].refcnt==0&&bcache[id].buf[i].timestamp<=temptime)
+    temp = &bcache[id].buf[i];
+  }
+  if(temp)
+  {
+    temp->dev=dev;
+    temp->blockno=blockno;
+    temp->valid=0;
+    temp->refcnt=1;
+    release(&bcache[id].lock);
+    acquiresleep(&temp->lock);
+    return temp;
+  }
+  panic("bget: no buffers");
+}
+```
+```c
+void
+brelse(struct buf *b)
+{
+  if(!holdingsleep(&b->lock))
+    panic("brelse");
+
+  releasesleep(&b->lock);
+
+  b->refcnt--;
+  if (b->refcnt == 0) {
+    // no one is waiting for it.
+    /*b->next->prev = b->prev;
+    b->prev->next = b->next;
+    b->next = bcache.head.next;
+    b->prev = &bcache.head;
+    bcache.head.next->prev = b;
+    bcache.head.next = b;*/
+    b->timestamp=ticks;// get a stamp of release time
+  }
+}
+```
+```
+notice the above brelse, since we apply hashtable instead and implement LRU 
+strategy by timestamp, so there is no need to acquire the table lock because the 
+structure won't be modified like Linked-List.
+```
+<image src="grade.PNG"> 
